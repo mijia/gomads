@@ -36,6 +36,27 @@ func (b *_SliceBoxed) Map(fmap interface{}) Boxed {
 	return newSliceBoxed(outs.Interface())
 }
 
+func (b *_SliceBoxed) ConcatMap(fmap interface{}) Boxed {
+	ft := reflect.TypeOf(fmap)
+	panicCondition(ft.Kind() != reflect.Func, "gomads: Map (not function)")
+	panicCondition(ft.NumIn() != 1, "gomads: Map (need one input param)")
+	panicCondition(ft.NumOut() != 1, "gomads: Map (need one output param)")
+
+	slice, err := baseType(ft.Out(0), reflect.Slice)
+	panicCondition(err != nil, "gomads: ConcatMap (not same slice container output for fmap)")
+
+	outs := reflect.MakeSlice(reflect.SliceOf(slice.Elem()), 0, b.V.Len())
+	fv := reflect.ValueOf(fmap)
+	for i := 0; i < b.V.Len(); i++ {
+		call := fv.Call([]reflect.Value{b.V.Index(i)})
+		outSlice := call[0]
+		for j := 0; j < outSlice.Len(); j++ {
+			outs = reflect.Append(outs, outSlice.Index(j))
+		}
+	}
+	return newSliceBoxed(outs.Interface())
+}
+
 func (b *_SliceBoxed) Unbox(dest interface{}) {
 	value := reflect.ValueOf(dest)
 	panicCondition(value.Kind() != reflect.Ptr, "gomads: Unbox needs a pointer")

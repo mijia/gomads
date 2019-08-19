@@ -10,6 +10,8 @@ func TestBoxInts(t *testing.T) {
 	var b []string
 	Box(a).Map(func(v int) string {
 		return fmt.Sprintf("%d_str", v)
+	}).ConcatMap(func(v string) []string {
+		return []string{v, v, v}
 	}).Unbox(&b)
 
 	fmt.Println(b)

@@ -8,6 +8,7 @@ import (
 // Boxed defines the boxed monads interface
 type Boxed interface {
 	Map(fmap interface{}) Boxed
+	ConcatMap(fmap interface{}) Boxed
 	Unbox(v interface{})
 }
 
