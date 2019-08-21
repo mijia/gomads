@@ -8,7 +8,7 @@ import (
 // Boxed defines the boxed monads interface
 type Boxed interface {
 	Map(fmap interface{}) Boxed
-	ConcatMap(fmap interface{}) Boxed
+	FlatMap(fmap interface{}) Boxed
 	Unbox(v interface{})
 }
 
@@ -18,6 +18,8 @@ func Box(v interface{}) Boxed {
 	switch t.Kind() {
 	case reflect.Slice:
 		return newSliceBoxed(v)
+	case reflect.Chan:
+		return newChanBoxed(v)
 	default:
 		panic(fmt.Sprintf("no such boxed container support for %s", reflect.TypeOf(v)))
 	}

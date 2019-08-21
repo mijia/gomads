@@ -11,9 +11,7 @@ type _SliceBoxed struct {
 
 func newSliceBoxed(v interface{}) Boxed {
 	slice, err := baseType(reflect.TypeOf(v), reflect.Slice)
-	if err != nil {
-		panic("gomads: sliceBox got no slice (" + reflect.TypeOf(v).String() + ")")
-	}
+	panicCondition(err != nil, "gomads: sliceBox got no slice ("+reflect.TypeOf(v).String()+")")
 	b := _SliceBoxed{
 		T: slice.Elem(),
 		V: reflect.ValueOf(v),
@@ -36,14 +34,14 @@ func (b *_SliceBoxed) Map(fmap interface{}) Boxed {
 	return newSliceBoxed(outs.Interface())
 }
 
-func (b *_SliceBoxed) ConcatMap(fmap interface{}) Boxed {
+func (b *_SliceBoxed) FlatMap(fmap interface{}) Boxed {
 	ft := reflect.TypeOf(fmap)
-	panicCondition(ft.Kind() != reflect.Func, "gomads: Map (not function)")
-	panicCondition(ft.NumIn() != 1, "gomads: Map (need one input param)")
-	panicCondition(ft.NumOut() != 1, "gomads: Map (need one output param)")
+	panicCondition(ft.Kind() != reflect.Func, "gomads: FlatMap (not function)")
+	panicCondition(ft.NumIn() != 1, "gomads: FlatMap (need one input param)")
+	panicCondition(ft.NumOut() != 1, "gomads: FlatMap (need one output param)")
 
 	slice, err := baseType(ft.Out(0), reflect.Slice)
-	panicCondition(err != nil, "gomads: ConcatMap (not same slice container output for fmap)")
+	panicCondition(err != nil, "gomads: FlatMap (not same slice container output for fmap)")
 
 	outs := reflect.MakeSlice(reflect.SliceOf(slice.Elem()), 0, b.V.Len())
 	fv := reflect.ValueOf(fmap)
