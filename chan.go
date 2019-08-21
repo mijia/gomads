@@ -2,6 +2,7 @@ package gomads
 
 import (
 	"reflect"
+	"sync"
 )
 
 type _ChanBoxed struct {
@@ -45,7 +46,24 @@ func (b *_ChanBoxed) FlatMap(fmap interface{}) Boxed {
 	panicCondition(ft.NumOut() != 1, "gomads: FlatMap (need one output param)")
 	panicCondition(ft.In(0) != b.T, "gomads: FlatMap (not same input type for fmap)")
 
-	return b
+	fv := reflect.ValueOf(fmap)
+	outChan := reflect.MakeChan(reflect.ChanOf(reflect.BothDir, ft.Out(0).Elem()), b.V.Cap())
+	go func() {
+		var wg sync.WaitGroup
+		for v, ok := b.V.Recv(); ok; v, ok = b.V.Recv() {
+			wg.Add(1)
+			results := fv.Call([]reflect.Value{v})
+			go func(fout reflect.Value) {
+				for v, ok := fout.Recv(); ok; v, ok = fout.Recv() {
+					outChan.Send(v)
+				}
+				wg.Done()
+			}(results[0])
+		}
+		wg.Wait()
+		outChan.Close()
+	}()
+	return newChanBoxed(outChan.Interface())
 }
 
 func (b *_ChanBoxed) Unbox(dest interface{}) {
