@@ -20,6 +20,8 @@ func Box(v interface{}) Boxed {
 		return newSliceBoxed(v)
 	case reflect.Chan:
 		return newChanBoxed(v)
+	case reflect.Func:
+		return newFunctionBoxed(v)
 	default:
 		panic(fmt.Sprintf("no such boxed container support for %s", reflect.TypeOf(v)))
 	}

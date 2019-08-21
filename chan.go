@@ -11,10 +11,10 @@ type _ChanBoxed struct {
 }
 
 func newChanBoxed(v interface{}) Boxed {
-	slice, err := baseType(reflect.TypeOf(v), reflect.Chan)
+	ch, err := baseType(reflect.TypeOf(v), reflect.Chan)
 	panicCondition(err != nil, "gomads: chanBox got no channel ("+reflect.TypeOf(v).String()+")")
 	b := _ChanBoxed{
-		T: slice.Elem(),
+		T: ch.Elem(),
 		V: reflect.ValueOf(v),
 	}
 	return &b

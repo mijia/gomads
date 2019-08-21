@@ -18,6 +18,25 @@ func TestBoxInts(t *testing.T) {
 	fmt.Println(b)
 }
 
+func TestBoxFunction(t *testing.T) {
+	a := func(v int) bool {
+		return v%2 == 0
+	}
+	var b func(v int) string
+	Box(a).Map(func(v bool) string {
+		if v {
+			return "even"
+		}
+		return "odd"
+	}).FlatMap(func(v string) func(x string) string {
+		return func(x string) string {
+			return "Tets"
+		}
+	}).Unbox(&b)
+	fmt.Println(b(12))
+	fmt.Println(b(13))
+}
+
 func TestBoxChannel(t *testing.T) {
 	ch := make(chan int)
 	var outChan chan string
