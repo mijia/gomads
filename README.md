@@ -28,5 +28,7 @@ ComposeErrors(
     },
 ).Unbox(&b)
 fmt.Println(b([]byte(`"1"`)))     // odd <nil>
+fmt.Println(b([]byte(`"2"`)))     // even <nil>
+fmt.Println(b([]byte(`"0"`)))     // "" 0 is not even nor odd
 fmt.Println(b([]byte(`"test"`)))  // "" strconv.Atoi: parsing "test": invalid syntax
 ```

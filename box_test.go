@@ -77,6 +77,8 @@ func TestComposeErrors(t *testing.T) {
 		},
 	).Unbox(&b)
 	fmt.Println(b([]byte(`"1"`)))
+	fmt.Println(b([]byte(`"2"`)))
+	fmt.Println(b([]byte(`"0"`)))
 	fmt.Println(b([]byte(`"test"`)))
 }
 
