@@ -27,6 +27,6 @@ Please checkout the article: [https://awalterschulze.github.io/blog/post/monads-
             return "odd"
         },
     ).Unbox(&b)
-    fmt.Println(b([]byte(`"1"`)))
-    fmt.Println(b([]byte(`"test"`)))
+    fmt.Println(b([]byte(`"1"`)))     // odd <nil>
+    fmt.Println(b([]byte(`"test"`)))  // "" strconv.Atoi: parsing "test": invalid syntax
 ```
