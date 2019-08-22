@@ -1,7 +1,9 @@
 package gomads
 
 import (
+	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -19,22 +21,63 @@ func TestBoxInts(t *testing.T) {
 }
 
 func TestBoxFunction(t *testing.T) {
-	a := func(v int) bool {
-		return v%2 == 0
+	a := func(v int) (bool, error) {
+		if v == 0 {
+			return false, fmt.Errorf("0 is not even nor odd")
+		}
+		return v%2 == 0, nil
 	}
-	var b func(v int) string
+	var b func(v int) (string, error)
 	Box(a).Map(func(v bool) string {
 		if v {
 			return "even"
 		}
 		return "odd"
-	}).FlatMap(func(v string) func(x string) string {
-		return func(x string) string {
-			return "Tets"
+	}).FlatMap(func(v string) (string, error) {
+		if v == "even" {
+			return "", fmt.Errorf("we don't process the even target")
 		}
+		return v, nil
 	}).Unbox(&b)
+	fmt.Println(b(0))
 	fmt.Println(b(12))
 	fmt.Println(b(13))
+}
+
+func TestBoxFunction2(t *testing.T) {
+	a := func(data []byte) (s string, err error) {
+		err = json.Unmarshal(data, &s)
+		return
+	}
+	var b func(data []byte) (int, error)
+	Box(a).FlatMap(strconv.Atoi).Unbox(&b)
+	fmt.Println(b([]byte(`"1"`)))
+	fmt.Println(b([]byte(`"test"`)))
+}
+
+func TestComposeErrors(t *testing.T) {
+	var b func(data []byte) (string, error)
+	ComposeErrors(
+		func(data []byte) (s string, err error) {
+			err = json.Unmarshal(data, &s)
+			return
+		},
+		strconv.Atoi,
+		func(i int) (bool, error) {
+			if i == 0 {
+				return false, fmt.Errorf("0 is not even nor odd")
+			}
+			return i%2 == 0, nil
+		},
+		func(isEven bool) string {
+			if isEven {
+				return "even"
+			}
+			return "odd"
+		},
+	).Unbox(&b)
+	fmt.Println(b([]byte(`"1"`)))
+	fmt.Println(b([]byte(`"test"`)))
 }
 
 func TestBoxChannel(t *testing.T) {
